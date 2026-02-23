@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Animal Sounds!</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+      transition: background 0.5s;
+    }
+
+    body.bg-home      { background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); }
+    body.bg-jungle    { background: linear-gradient(135deg, #d4edda 0%, #74c178 100%); }
+    body.bg-underwater{ background: linear-gradient(135deg, #b3e5fc 0%, #0277bd 100%); }
+    body.bg-farm      { background: linear-gradient(135deg, #fff9c4 0%, #f9a825 100%); }
+    body.bg-pets      { background: linear-gradient(135deg, #f3e5f5 0%, #ab47bc 100%); }
+    body.bg-dinos     { background: linear-gradient(135deg, #e8f5e9 0%, #558b2f 100%); }
+
+    h1 {
+      font-size: clamp(1.8rem, 6vw, 3rem);
+      color: #e84393;
+      text-shadow: 3px 3px 0 #fff, 5px 5px 0 #ffb3de;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    .subtitle {
+      font-size: clamp(1rem, 3.5vw, 1.4rem);
+      color: #5a3e8a;
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    /* ── CATEGORY SCREEN ── */
+    #home-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 700px;
+    }
+
+    .cat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 20px;
+      width: 100%;
+    }
+
+    .cat-btn {
+      border: none;
+      border-radius: 28px;
+      padding: 24px 12px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      font-family: inherit;
+      font-size: clamp(1.1rem, 4vw, 1.5rem);
+      font-weight: bold;
+      box-shadow: 0 7px 0 rgba(0,0,0,0.18), 0 10px 24px rgba(0,0,0,0.12);
+      transition: transform 0.1s, box-shadow 0.1s;
+      outline: none;
+      overflow: hidden;
+      position: relative;
+    }
+    .cat-btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 3px 0 rgba(0,0,0,0.18), 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .cat-btn .cat-emoji { font-size: clamp(3rem, 12vw, 5rem); line-height: 1; }
+    .cat-jungle     { background: #a5d6a7; color: #1b5e20; }
+    .cat-underwater { background: #81d4fa; color: #01579b; }
+    .cat-farm       { background: #fff59d; color: #e65100; }
+    .cat-pets       { background: #ce93d8; color: #4a148c; }
+    .cat-dinos      { background: #c8e6c9; color: #1b5e20; }
+
+    /* ── GAME SCREEN ── */
+    #game-screen { display: none; flex-direction: column; align-items: center; width: 100%; }
+
+    .back-btn {
+      align-self: flex-start;
+      background: rgba(255,255,255,0.75);
+      border: 3px solid rgba(255,255,255,0.9);
+      border-radius: 50px;
+      padding: 8px 20px;
+      font-family: inherit;
+      font-size: clamp(0.9rem, 3vw, 1.1rem);
+      font-weight: bold;
+      color: #5a3e8a;
+      cursor: pointer;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transition: transform 0.1s;
+    }
+    .back-btn:active { transform: scale(0.95); }
+
+    .category-title {
+      font-size: clamp(1.5rem, 5vw, 2.4rem);
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 6px;
+      text-shadow: 2px 2px 0 rgba(255,255,255,0.6);
+      color: #3e2a6e;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+      gap: 16px;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 24px;
+      padding: 10px 8px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0 6px 0 rgba(0,0,0,0.15), 0 8px 20px rgba(0,0,0,0.12);
+      transition: transform 0.1s, box-shadow 0.1s;
+      border: 4px solid transparent;
+      outline: none;
+    }
+    .card:active, .card.bounce {
+      transform: scale(0.93) translateY(4px);
+      box-shadow: 0 2px 0 rgba(0,0,0,0.12), 0 4px 10px rgba(0,0,0,0.08);
+    }
+    .card.bounce {
+      border-color: #e84393;
+      animation: bounceAnim 0.45s ease;
+    }
+
+    @keyframes bounceAnim {
+      0%   { transform: scale(1); }
+      30%  { transform: scale(1.12) rotate(-3deg); }
+      60%  { transform: scale(0.95) rotate(2deg); }
+      80%  { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    /* ── ANIMAL PHOTO ── */
+    .animal-img {
+      width: 110px;
+      height: 110px;
+      object-fit: contain;
+      object-position: center;
+      border-radius: 16px;
+      margin-bottom: 8px;
+      background: #f0f0f0;
+      display: block;
+    }
+
+    /* Fallback emoji shown if image fails */
+    .animal-fallback {
+      font-size: 4rem;
+      line-height: 1;
+      margin-bottom: 8px;
+      display: none;
+    }
+
+    .label {
+      font-size: clamp(1rem, 3.5vw, 1.35rem);
+      font-weight: bold;
+      color: #5a3e8a;
+      text-align: center;
+    }
+
+    /* ── SPELLING ── */
+    .spelling {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 3px;
+      margin-top: 8px;
+    }
+    .letter {
+      background: #e84393;
+      color: white;
+      border-radius: 8px;
+      width: clamp(20px, 6vw, 28px);
+      height: clamp(20px, 6vw, 28px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(0.65rem, 2.2vw, 0.9rem);
+      font-weight: bold;
+      text-transform: uppercase;
+      box-shadow: 0 2px 0 #a3005e;
+    }
+    .letter.pop { animation: letterPop 0.3s ease; }
+    @keyframes letterPop {
+      0%   { transform: scale(1);   background: #e84393; }
+      50%  { transform: scale(1.4); background: #7b5ea7; }
+      100% { transform: scale(1);   background: #e84393; }
+    }
+
+    /* ── BUBBLE ── */
+    .bubble {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      background: white;
+      border-radius: 40px;
+      padding: 20px 40px;
+      font-size: clamp(2rem, 8vw, 4rem);
+      font-weight: bold;
+      color: #e84393;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+      border: 5px solid #e84393;
+      text-align: center;
+      pointer-events: none;
+      z-index: 100;
+      transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s;
+      opacity: 0;
+      white-space: nowrap;
+    }
+    .bubble.show { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+
+    /* ── PHOTO OVERLAY ── */
+    #photo-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.72);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      gap: 20px;
+    }
+    #photo-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #overlay-img {
+      width: min(80vw, 80vh, 500px);
+      height: min(80vw, 80vh, 500px);
+      object-fit: contain;
+      border-radius: 30px;
+      box-shadow: 0 12px 50px rgba(0,0,0,0.5);
+      background: #222;
+    }
+    #overlay-emoji {
+      font-size: min(60vw, 60vh, 300px);
+      line-height: 1;
+      display: none;
+    }
+    #overlay-name {
+      font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+      font-size: clamp(2rem, 8vw, 4rem);
+      font-weight: bold;
+      color: white;
+      text-shadow: 3px 3px 0 #e84393;
+      text-align: center;
+    }
+    #overlay-letters {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+    }
+    #overlay-letters .letter {
+      width: clamp(32px, 8vw, 52px);
+      height: clamp(32px, 8vw, 52px);
+      font-size: clamp(1rem, 3.5vw, 1.6rem);
+      box-shadow: 0 3px 0 #a3005e;
+    }
+
+    /* ── STARS ── */
+    .stars {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 99; overflow: hidden;
+    }
+    .star {
+      position: absolute;
+      font-size: 1.8rem;
+      animation: flyUp 1s ease-out forwards;
+    }
+    @keyframes flyUp {
+      0%   { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+      100% { opacity: 0; transform: translateY(-200px) scale(1.5) rotate(180deg); }
+    }
+  </style>
+</head>
+<body class="bg-home">
+
+  <!-- HOME / CATEGORY SCREEN -->
+  <div id="home-screen">
+    <h1>🐾 Animal Sounds! 🐾</h1>
+    <p class="subtitle">Choose a world to explore!</p>
+    <div class="cat-grid">
+      <button class="cat-btn cat-jungle"     onclick="showCategory('jungle')">
+        <span class="cat-emoji">🌿</span> Jungle
+      </button>
+      <button class="cat-btn cat-underwater" onclick="showCategory('underwater')">
+        <span class="cat-emoji">🌊</span> Underwater
+      </button>
+      <button class="cat-btn cat-farm"       onclick="showCategory('farm')">
+        <span class="cat-emoji">🌾</span> Farm
+      </button>
+      <button class="cat-btn cat-pets"       onclick="showCategory('pets')">
+        <span class="cat-emoji">🏠</span> Pets
+      </button>
+      <button class="cat-btn cat-dinos"      onclick="showCategory('dinos')">
+        <span class="cat-emoji">🦕</span> Dinosaurs
+      </button>
+    </div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="game-screen">
+    <button class="back-btn" onclick="showHome()">← Back</button>
+    <div class="category-title" id="cat-title"></div>
+    <p class="subtitle">Tap an animal to hear it!</p>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="bubble" id="bubble"></div>
+  <div class="stars"  id="stars"></div>
+
+  <!-- LARGE PHOTO OVERLAY -->
+  <div id="photo-overlay">
+    <img id="overlay-img" src="" alt="" onerror="this.style.display='none';document.getElementById('overlay-emoji').style.display='block'">
+    <div id="overlay-emoji"></div>
+    <div id="overlay-name"></div>
+    <div id="overlay-letters"></div>
+  </div>
+
+  <script>
+    // Cartoon-style animal illustrations from OpenClipart & public domain SVG sources
+    // Using Wikipedia's illustrated/artwork images — colorful, clear, kid-friendly
+    const categories = {
+      jungle: {
+        title: "🌿 Jungle Animals",
+        bg: "bg-jungle",
+        animals: [
+          { name: "Lion",     emoji: "🦁", sound: "Roaaaar!",        color: "#fff8e1",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Lion_waiting_in_Namibia.jpg/320px-Lion_waiting_in_Namibia.jpg" },
+          { name: "Elephant", emoji: "🐘", sound: "Pawpaw pawpaw!",  color: "#ede7f6",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/African_Bush_Elephant.jpg/320px-African_Bush_Elephant.jpg" },
+          { name: "Monkey",   emoji: "🐵", sound: "Ooh ooh ah ah!", color: "#fff3e0",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Capuchin_Costa_Rica.jpg/320px-Capuchin_Costa_Rica.jpg" },
+          { name: "Tiger",    emoji: "🐯", sound: "Grrrrowl!",       color: "#ffe0b2",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Walking_tiger_female.jpg/320px-Walking_tiger_female.jpg" },
+          { name: "Parrot",   emoji: "🦜", sound: "Squawk squawk!",  color: "#e8f5e9",
+            img: "Parrot.webp" },
+          { name: "Snake",    emoji: "🐍", sound: "Hisssss!",         color: "#f1f8e9",
+            img: "Snake.jpg" },
+          { name: "Gorilla",  emoji: "🦍", sound: "Ugh ugh ugh!",    color: "#efebe9",
+            img: "Gorilla.jpg" },
+          { name: "Zebra",    emoji: "🦓", sound: "Bark bark!",       color: "#fafafa",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Plains_Zebra_Equus_quagga.jpg/320px-Plains_Zebra_Equus_quagga.jpg" },
+          { name: "Giraffe",  emoji: "🦒", sound: "Hmmm hmmm!",      color: "#fff9c4",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Giraffe_Mikumi_National_Park.jpg/213px-Giraffe_Mikumi_National_Park.jpg" },
+        ]
+      },
+      underwater: {
+        title: "🌊 Underwater Animals",
+        bg: "bg-underwater",
+        animals: [
+          { name: "Dolphin",  emoji: "🐬", sound: "Click click wheee!", color: "#b3e5fc",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Tursiops_truncatus_01.jpg/320px-Tursiops_truncatus_01.jpg" },
+          { name: "Whale",    emoji: "🐳", sound: "Wooooo woooo!",      color: "#e3f2fd",
+            img: "Blue whale.webp" },
+          { name: "Crab",     emoji: "🦀", sound: "Snap snap snap!",    color: "#fce4ec",
+            img: "Crab.jpg" },
+          { name: "Octopus",  emoji: "🐙", sound: "Blub blub blub!",   color: "#ede7f6",
+            img: "Octopus.jpg" },
+          { name: "Fish",     emoji: "🐟", sound: "Blub blub!",         color: "#e0f7fa",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Amphiprion_ocellaris_%28Clown_anemonefish%29_by_Nick_Hobgood.jpg/320px-Amphiprion_ocellaris_%28Clown_anemonefish%29_by_Nick_Hobgood.jpg" },
+          { name: "Shark",    emoji: "🦈", sound: "Splash splash!",     color: "#b2ebf2",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/White_shark.jpg/320px-White_shark.jpg" },
+          { name: "Turtle",   emoji: "🐢", sound: "Shhh shhh!",         color: "#c8e6c9",
+            img: "Turtle.jpg" },
+          { name: "Seahorse", emoji: "🦄", sound: "Squeak squeak!",    color: "#f8bbd0",
+            img: "Seahorse.webp" },
+          { name: "Lobster",  emoji: "🦞", sound: "Snap snap!",         color: "#ffccbc",
+            img: "Lobster.jpg" },
+        ]
+      },
+      pets: {
+        title: "🏠 My Pets",
+        bg: "bg-pets",
+        animals: [
+          { name: "Dog",       emoji: "🐶", sound: "Woof woof!",      color: "#ffe0b2",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/YellowLabradorLooking_new.jpg/320px-YellowLabradorLooking_new.jpg" },
+          { name: "Cat",       emoji: "🐱", sound: "Meow meow!",      color: "#f8bbd0",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Cat_November_2010-1a.jpg/320px-Cat_November_2010-1a.jpg" },
+          { name: "Rabbit",    emoji: "🐰", sound: "Squeak squeak!",  color: "#fce4ec",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Oryctolagus_cuniculus_Rcdo.jpg/320px-Oryctolagus_cuniculus_Rcdo.jpg" },
+          { name: "Hamster",   emoji: "🐹", sound: "Squeak squeak!",  color: "#fff3e0",
+            img: "Hamster.webp" },
+          { name: "Goldfish",  emoji: "🐠", sound: "Blub blub!",      color: "#e3f2fd",
+            img: "Goldfish.webp" },
+          { name: "Parrot",    emoji: "🦜", sound: "Squawk hello!",   color: "#e8f5e9",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Melopsittacus_undulatus_-_two_budgies.jpg/320px-Melopsittacus_undulatus_-_two_budgies.jpg" },
+          { name: "Turtle",    emoji: "🐢", sound: "Shhh shhh!",      color: "#c8e6c9",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/RedEaredSlider001.jpg/320px-RedEaredSlider001.jpg" },
+          { name: "Guinea Pig",emoji: "🐾", sound: "Wheek wheek!",    color: "#fff9c4",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/George_the_amazing_guinea_pig.jpg/320px-George_the_amazing_guinea_pig.jpg" },
+          { name: "Kitten",    emoji: "🐈", sound: "Purrr purrr!",    color: "#f3e5f5",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Kittyply_edit1.jpg/320px-Kittyply_edit1.jpg" },
+        ]
+      },
+      dinos: {
+        title: "🦕 Dinosaurs",
+        bg: "bg-dinos",
+        animals: [
+          { name: "T-Rex",        emoji: "🦖", sound: "Roaaaar!",        color: "#fff8e1",
+            img: "Trex.jpg" },
+          { name: "Triceratops",  emoji: "🦕", sound: "Grrrumble!",      color: "#e8f5e9",
+            img: "triceratops.webp" },
+          { name: "Stegosaurus",  emoji: "🦴", sound: "Groooan!",         color: "#f1f8e9",
+            img: "Stegosaurus.jpeg" },
+          { name: "Pterodactyl",  emoji: "🦅", sound: "Screech screech!", color: "#e3f2fd",
+            img: "Pterodactyl.jpeg" },
+          { name: "Brachiosaurus",emoji: "🦒", sound: "Boooom boooom!",   color: "#fff9c4",
+            img: "Brachiosaurus.jpg" },
+          { name: "Ankylosaurus", emoji: "🐊", sound: "Thump thump!",     color: "#dcedc8",
+            img: "Ankylosaurus.jpg" },
+          { name: "Spinosaurus",  emoji: "🐉", sound: "Hisss roaar!",     color: "#fce4ec",
+            img: "Spinosaurus.jpg" },
+          { name: "Velociraptor", emoji: "🦎", sound: "Chitter chitter!", color: "#ffe0b2",
+            img: "velociraptor.avif" },
+          { name: "Diplodocus",   emoji: "🐲", sound: "Rumble rumble!",   color: "#e8eaf6",
+            img: "diplodocus.jpg" },
+        ]
+      },
+      farm: {
+        title: "🌾 Farm Animals",
+        bg: "bg-farm",
+        animals: [
+          { name: "Cow",      emoji: "🐮", sound: "Moooo!",             color: "#e8f5e9",
+            img: "cow.jpg" },
+          { name: "Pig",      emoji: "🐷", sound: "Oink oink!",        color: "#fce4ec",
+            img: "pig.jpg" },
+          { name: "Sheep",    emoji: "🐑", sound: "Baaaa!",             color: "#e0f7fa",
+            img: "sheep.webp" },
+          { name: "Horse",    emoji: "🐴", sound: "Neigh neigh!",      color: "#fbe9e7",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Nokota_Horses_cropped.jpg/320px-Nokota_Horses_cropped.jpg" },
+          { name: "Chicken",  emoji: "🐔", sound: "Cluck cluck!",      color: "#fff9c4",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Male_and_female_chicken_sitting_together.jpg/320px-Male_and_female_chicken_sitting_together.jpg" },
+          { name: "Duck",     emoji: "🦆", sound: "Quack quack!",      color: "#e3f2fd",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Mallard2.jpg/320px-Mallard2.jpg" },
+          { name: "Dog",      emoji: "🐶", sound: "Woof woof!",        color: "#ffe0b2",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/YellowLabradorLooking_new.jpg/320px-YellowLabradorLooking_new.jpg" },
+          { name: "Cat",      emoji: "🐱", sound: "Meow meow!",        color: "#f8bbd0",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Cat_November_2010-1a.jpg/320px-Cat_November_2010-1a.jpg" },
+          { name: "Rooster",  emoji: "🐓", sound: "Cock a doodle doo!",color: "#ffccbc",
+            img: "Rooster.jpg" },
+        ]
+      }
+    };
+
+    const bubble    = document.getElementById('bubble');
+    const starsEl   = document.getElementById('stars');
+    const grid      = document.getElementById('grid');
+    const catTitle  = document.getElementById('cat-title');
+    const homeScr   = document.getElementById('home-screen');
+    const gameScr   = document.getElementById('game-screen');
+    const synth     = window.speechSynthesis;
+    let bubbleTimer = null;
+    let femaleVoice = null;
+
+    // Pick an English female voice once voices are loaded
+    function loadVoice() {
+      const voices = synth.getVoices();
+      // Prefer voices with 'female' in name, or known female voices on Mac/iOS/Windows
+      const preferred = [
+        'Samantha', 'Karen', 'Moira', 'Tessa', 'Veena',   // macOS / iOS
+        'Microsoft Zira', 'Microsoft Susan',                // Windows
+        'Google UK English Female', 'Google US English'    // Chrome
+      ];
+      for (const name of preferred) {
+        const v = voices.find(v => v.name.includes(name) && v.lang.startsWith('en'));
+        if (v) { femaleVoice = v; return; }
+      }
+      // Fallback: any English female-sounding voice
+      femaleVoice = voices.find(v => v.lang.startsWith('en') && /female|woman|girl/i.test(v.name))
+                 || voices.find(v => v.lang.startsWith('en'))
+                 || null;
+    }
+    synth.onvoiceschanged = loadVoice;
+    loadVoice();
+
+    function speak(text, rate = 0.85, pitch = 1.3) {
+      const u = new SpeechSynthesisUtterance(text);
+      if (femaleVoice) u.voice = femaleVoice;
+      u.rate = rate; u.pitch = pitch; u.lang = 'en-GB';
+      return u;
+    }
+
+    function showHome() {
+      homeScr.style.display = 'flex';
+      gameScr.style.display = 'none';
+      document.body.className = 'bg-home';
+      synth.cancel();
+    }
+
+    function showCategory(key) {
+      const cat = categories[key];
+      document.body.className = cat.bg;
+      catTitle.textContent = cat.title;
+      grid.innerHTML = '';
+      cat.animals.forEach(animal => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.setAttribute('tabindex', '0');
+        card.style.background = animal.color;
+
+        const letters = animal.name.replace(/ /g, '').split('').map(
+          l => `<span class="letter">${l}</span>`
+        ).join('');
+
+        card.innerHTML = `
+          <img class="animal-img" src="${animal.img}" alt="${animal.name}"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+          <span class="animal-fallback">${animal.emoji}</span>
+          <span class="label">${animal.name}</span>
+          <div class="spelling">${letters}</div>
+        `;
+
+        card.addEventListener('click', () => playAnimal(animal, card));
+        card.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') playAnimal(animal, card);
+        });
+        grid.appendChild(card);
+      });
+
+      homeScr.style.display = 'none';
+      gameScr.style.display = 'flex';
+      window.scrollTo(0, 0);
+    }
+
+    const overlay      = document.getElementById('photo-overlay');
+    const overlayImg   = document.getElementById('overlay-img');
+    const overlayEmoji = document.getElementById('overlay-emoji');
+    const overlayName  = document.getElementById('overlay-name');
+    const overlayLetters = document.getElementById('overlay-letters');
+    let overlayTimer   = null;
+
+    function showOverlay(animal) {
+      // Reset emoji fallback
+      overlayImg.style.display = 'block';
+      overlayEmoji.style.display = 'none';
+      overlayEmoji.textContent = animal.emoji;
+      overlayImg.src = animal.img;
+      overlayImg.alt = animal.name;
+      overlayName.textContent = animal.name;
+
+      // Build letter tiles
+      const cleanName = animal.name.replace(/ /g, '');
+      overlayLetters.innerHTML = cleanName.split('').map(
+        l => `<span class="letter">${l}</span>`
+      ).join('');
+
+      overlay.classList.add('show');
+    }
+
+    function hideOverlay() {
+      overlay.classList.remove('show');
+    }
+
+    // Tap overlay to dismiss early
+    overlay.addEventListener('click', () => {
+      clearTimeout(overlayTimer);
+      synth.cancel();
+      hideOverlay();
+    });
+
+    function playAnimal(animal, card) {
+      card.classList.remove('bounce');
+      void card.offsetWidth;
+      card.classList.add('bounce');
+      card.addEventListener('animationend', () => card.classList.remove('bounce'), { once: true });
+
+      shootStars(card);
+      synth.cancel();
+      clearTimeout(overlayTimer);
+
+      showOverlay(animal);
+
+      // Speak name
+      synth.speak(speak(animal.name, 0.85, 1.3));
+
+      // Spell out letters with pop animation on overlay tiles
+      const cleanName = animal.name.replace(/ /g, '');
+      cleanName.split('').forEach((letter, i) => {
+        const utter = speak(letter, 0.8, 1.5);
+        utter.onstart = () => {
+          // Pop on overlay letters
+          const oLetters = overlayLetters.querySelectorAll('.letter');
+          if (oLetters[i]) {
+            oLetters[i].classList.remove('pop');
+            void oLetters[i].offsetWidth;
+            oLetters[i].classList.add('pop');
+          }
+          // Also pop on card letters
+          const cLetters = card.querySelectorAll('.letter');
+          if (cLetters[i]) {
+            cLetters[i].classList.remove('pop');
+            void cLetters[i].offsetWidth;
+            cLetters[i].classList.add('pop');
+          }
+        };
+        synth.speak(utter);
+      });
+
+      // Say name again then sound, then close overlay
+      synth.speak(speak(animal.name, 0.85, 1.3));
+      const soundUtter = speak(animal.sound, 0.8, 1.4);
+      soundUtter.onend = () => {
+        overlayTimer = setTimeout(hideOverlay, 800);
+      };
+      synth.speak(soundUtter);
+    }
+
+    function shootStars(card) {
+      const rect = card.getBoundingClientRect();
+      const cx   = rect.left + rect.width  / 2;
+      const cy   = rect.top  + rect.height / 2;
+      const emojis = ['⭐','🌟','✨','💫','🎉'];
+      for (let i = 0; i < 6; i++) {
+        const star = document.createElement('span');
+        star.className = 'star';
+        star.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        const angle   = (Math.random() * 160) - 80;
+        const offsetX = (Math.random() * 80) - 40;
+        star.style.left = (cx + offsetX) + 'px';
+        star.style.top  = cy + 'px';
+        star.style.animationDelay = (i * 0.07) + 's';
+        star.style.transform = `rotate(${angle}deg)`;
+        starsEl.appendChild(star);
+        star.addEventListener('animationend', () => star.remove());
+      }
+    }
+  </script>
+</body>
+</html>

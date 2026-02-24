@@ -728,7 +728,6 @@
                onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
           <span class="animal-fallback">${animal.emoji}</span>
           <span class="label">${animal.name}</span>
-          <div class="spelling">${letters}</div>
         `;
 
         card.addEventListener('click', () => playAnimal(animal, card));
@@ -765,12 +764,8 @@
       overlayImg.alt = animal.name;
       overlayName.textContent = animal.name;
 
-      const cleanName = animal.name.replace(/ /g, '');
-      overlayLetters.innerHTML = cleanName.split('').map(
-        l => `<span class="letter">${l}</span>`
-      ).join('');
-
-      // Hide spell challenge, show spell button
+      // Hide letters, spell button and challenge — go straight to challenge after name
+      overlayLetters.innerHTML = '';
       spellChallenge.style.display = 'none';
       spellBtn.style.display = 'none';
       overlay.classList.add('show');

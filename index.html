@@ -29,6 +29,9 @@
     body.bg-farm      { background: linear-gradient(135deg, #fff9c4 0%, #f9a825 100%); }
     body.bg-pets      { background: linear-gradient(135deg, #f3e5f5 0%, #ab47bc 100%); }
     body.bg-dinos     { background: linear-gradient(135deg, #e8f5e9 0%, #558b2f 100%); }
+    body.bg-safari    { background: linear-gradient(135deg, #fff8e1 0%, #e65100 100%); }
+    body.bg-arctic    { background: linear-gradient(135deg, #e3f2fd 0%, #90caf9 100%); }
+    body.bg-nocturnal { background: linear-gradient(135deg, #311b92 0%, #1a0533 100%); }
 
     h1 {
       font-size: clamp(1.8rem, 6vw, 3rem);
@@ -90,6 +93,9 @@
     .cat-farm       { background: #fff59d; color: #e65100; }
     .cat-pets       { background: #ce93d8; color: #4a148c; }
     .cat-dinos      { background: #c8e6c9; color: #1b5e20; }
+    .cat-safari     { background: #ffe0b2; color: #bf360c; }
+    .cat-arctic     { background: #bbdefb; color: #0d47a1; }
+    .cat-nocturnal  { background: #311b92; color: #ede7f6; }
 
     /* ── GAME SCREEN ── */
     #game-screen { display: none; flex-direction: column; align-items: center; width: 100%; }
@@ -314,10 +320,10 @@
     <p class="subtitle">Choose a world to explore!</p>
     <div class="cat-grid">
       <button class="cat-btn cat-jungle"     onclick="showCategory('jungle')">
-        <span class="cat-emoji">🌿</span> Jungle
+        <span class="cat-emoji">🌳</span> Jungle
       </button>
       <button class="cat-btn cat-underwater" onclick="showCategory('underwater')">
-        <span class="cat-emoji">🌊</span> Underwater
+        <span class="cat-emoji">🌊</span> Sea Creatures
       </button>
       <button class="cat-btn cat-farm"       onclick="showCategory('farm')">
         <span class="cat-emoji">🌾</span> Farm
@@ -327,6 +333,15 @@
       </button>
       <button class="cat-btn cat-dinos"      onclick="showCategory('dinos')">
         <span class="cat-emoji">🦕</span> Dinosaurs
+      </button>
+      <button class="cat-btn cat-safari"     onclick="showCategory('safari')">
+        <span class="cat-emoji">🏜️</span> Safari
+      </button>
+      <button class="cat-btn cat-arctic"     onclick="showCategory('arctic')">
+        <span class="cat-emoji">❄️</span> Arctic
+      </button>
+      <button class="cat-btn cat-nocturnal"  onclick="showCategory('nocturnal')">
+        <span class="cat-emoji">🌙</span> Nocturnal
       </button>
     </div>
   </div>
@@ -354,6 +369,30 @@
     // Cartoon-style animal illustrations from OpenClipart & public domain SVG sources
     // Using Wikipedia's illustrated/artwork images — colorful, clear, kid-friendly
     const categories = {
+      safari: {
+        title: "🌍 Safari",
+        bg: "bg-safari",
+        animals: [
+          { name: "Elephant", emoji: "🐘", sound: "Pawpaw pawpaw!", color: "#ede7f6",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/African_Bush_Elephant.jpg/320px-African_Bush_Elephant.jpg" },
+          { name: "Lion",     emoji: "🦁", sound: "Roaaaar!",       color: "#fff8e1",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Lion_waiting_in_Namibia.jpg/320px-Lion_waiting_in_Namibia.jpg" },
+          { name: "Zebra",    emoji: "🦓", sound: "Bark bark!",     color: "#fafafa",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Plains_Zebra_Equus_quagga.jpg/320px-Plains_Zebra_Equus_quagga.jpg" },
+          { name: "Giraffe",  emoji: "🦒", sound: "Hmmm hmmm!",    color: "#fff9c4",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Giraffe_Mikumi_National_Park.jpg/213px-Giraffe_Mikumi_National_Park.jpg" },
+          { name: "Cheetah",  emoji: "🐆", sound: "Chirp chirp!",  color: "#fff3e0",
+            img: "Cheetah.jpg" },
+          { name: "Hippo",    emoji: "🦛", sound: "Grunt grunt!",   color: "#e8eaf6",
+            img: "Portrait_Hippopotamus_in_the_water.jpg" },
+          { name: "Rhino",    emoji: "🦏", sound: "Snort snort!",   color: "#efebe9",
+            img: "Rhino.avif" },
+          { name: "Gorilla",  emoji: "🦍", sound: "Ugh ugh ugh!",  color: "#f3e5f5",
+            img: "Gorilla.jpg" },
+          { name: "Meerkat",  emoji: "🐾", sound: "Squeak squeak!", color: "#fce4ec",
+            img: "Meerkat.jpg" },
+        ]
+      },
       jungle: {
         title: "🌿 Jungle Animals",
         bg: "bg-jungle",
@@ -379,7 +418,7 @@
         ]
       },
       underwater: {
-        title: "🌊 Underwater Animals",
+        title: "🌊 Sea Creatures",
         bg: "bg-underwater",
         animals: [
           { name: "Dolphin",  emoji: "🐬", sound: "Click click wheee!", color: "#b3e5fc",
@@ -395,7 +434,7 @@
           { name: "Shark",    emoji: "🦈", sound: "Splash splash!",     color: "#b2ebf2",
             img: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/White_shark.jpg/320px-White_shark.jpg" },
           { name: "Turtle",   emoji: "🐢", sound: "Shhh shhh!",         color: "#c8e6c9",
-            img: "Turtle.jpg" },
+            img: "Turtle.webp" },
           { name: "Seahorse", emoji: "🦄", sound: "Squeak squeak!",    color: "#f8bbd0",
             img: "Seahorse.webp" },
           { name: "Lobster",  emoji: "🦞", sound: "Snap snap!",         color: "#ffccbc",
@@ -417,13 +456,11 @@
           { name: "Goldfish",  emoji: "🐠", sound: "Blub blub!",      color: "#e3f2fd",
             img: "Goldfish.webp" },
           { name: "Parrot",    emoji: "🦜", sound: "Squawk hello!",   color: "#e8f5e9",
-            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Melopsittacus_undulatus_-_two_budgies.jpg/320px-Melopsittacus_undulatus_-_two_budgies.jpg" },
+            img: "Parrot.webp" },
           { name: "Turtle",    emoji: "🐢", sound: "Shhh shhh!",      color: "#c8e6c9",
             img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/RedEaredSlider001.jpg/320px-RedEaredSlider001.jpg" },
           { name: "Guinea Pig",emoji: "🐾", sound: "Wheek wheek!",    color: "#fff9c4",
             img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/George_the_amazing_guinea_pig.jpg/320px-George_the_amazing_guinea_pig.jpg" },
-          { name: "Kitten",    emoji: "🐈", sound: "Purrr purrr!",    color: "#f3e5f5",
-            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Kittyply_edit1.jpg/320px-Kittyply_edit1.jpg" },
         ]
       },
       dinos: {
@@ -448,6 +485,52 @@
             img: "velociraptor.avif" },
           { name: "Diplodocus",   emoji: "🐲", sound: "Rumble rumble!",   color: "#e8eaf6",
             img: "diplodocus.jpg" },
+        ]
+      },
+      arctic: {
+        title: "❄️ Arctic Animals",
+        bg: "bg-arctic",
+        animals: [
+          { name: "Polar Bear",  emoji: "🐻", sound: "Roaaaar!",       color: "#e3f2fd",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Polar_Bear_-_Alaska_%28cropped%29.jpg/320px-Polar_Bear_-_Alaska_%28cropped%29.jpg" },
+          { name: "Penguin",     emoji: "🐧", sound: "Squawk squawk!", color: "#fafafa",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/South_Shetland-2016-Deception_Island%E2%80%93Chinstrap_penguin_%28Pygoscelis_antarctica%29_04.jpg/320px-South_Shetland-2016-Deception_Island%E2%80%93Chinstrap_penguin_%28Pygoscelis_antarctica%29_04.jpg" },
+          { name: "Seal",        emoji: "🦭", sound: "Arf arf arf!",   color: "#e0f7fa",
+            img: "Seal.jpg" },
+          { name: "Walrus",      emoji: "🦭", sound: "Grunt grunt!",   color: "#fff3e0",
+            img: "Walrus.jpeg" },
+          { name: "Arctic Fox",  emoji: "🦊", sound: "Yip yip!",       color: "#f5f5f5",
+            img: "Artic fox.avif" },
+          { name: "Snowy Owl",   emoji: "🦉", sound: "Hoo hoo!",       color: "#e8eaf6",
+            img: "Snowey Owl.jpg" },
+          { name: "Reindeer",    emoji: "🦌", sound: "Grunt grunt!",   color: "#fff8e1",
+            img: "Reindeer.jpg" },
+          { name: "Narwhal",     emoji: "🐋", sound: "Whooo whooo!",   color: "#b3e5fc",
+            img: "Narwhal.jpg" },
+          { name: "Husky",       emoji: "🐕", sound: "Woof woof!",     color: "#eceff1",
+            img: "Husky.jpeg" },
+        ]
+      },
+      nocturnal: {
+        title: "🌙 Nocturnal Animals",
+        bg: "bg-nocturnal",
+        animals: [
+          { name: "Owl",         emoji: "🦉", sound: "Hoo hoo!",        color: "#4a148c",
+            img: "OWl.jpeg" },
+          { name: "Bat",         emoji: "🦇", sound: "Eeek eeek!",      color: "#311b92",
+            img: "Bat.jpeg" },
+          { name: "Hedgehog",    emoji: "🦔", sound: "Snuffle snuffle!", color: "#4a148c",
+            img: "Hedgehog.webp" },
+          { name: "Fox",         emoji: "🦊", sound: "Yip yip!",        color: "#311b92",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Vulpes_vulpes_ssp_fulvus.jpg/320px-Vulpes_vulpes_ssp_fulvus.jpg" },
+          { name: "Badger",      emoji: "🦡", sound: "Growl growl!",    color: "#4a148c",
+            img: "BADGER.jpg" },
+          { name: "Raccoon",     emoji: "🦝", sound: "Chitter chitter!", color: "#311b92",
+            img: "Racoon.jpeg" },
+          { name: "Firefly",     emoji: "✨", sound: "Buzz buzz!",       color: "#4a148c",
+            img: "Firefly.avif" },
+          { name: "Wolf",        emoji: "🐺", sound: "Awoooo!",         color: "#311b92",
+            img: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Kolm%C3%A5rden_Wolf.jpg/320px-Kolm%C3%A5rden_Wolf.jpg" },
         ]
       },
       farm: {
@@ -610,7 +693,7 @@
       // Spell out letters with pop animation on overlay tiles
       const cleanName = animal.name.replace(/ /g, '');
       cleanName.split('').forEach((letter, i) => {
-        const utter = speak(letter, 0.8, 1.5);
+        const utter = speak(letter, 0.4, 1.5);
         utter.onstart = () => {
           // Pop on overlay letters
           const oLetters = overlayLetters.querySelectorAll('.letter');
@@ -630,13 +713,12 @@
         synth.speak(utter);
       });
 
-      // Say name again then sound, then close overlay
-      synth.speak(speak(animal.name, 0.85, 1.3));
-      const soundUtter = speak(animal.sound, 0.8, 1.4);
-      soundUtter.onend = () => {
+      // Say name again then close overlay
+      const nameAgain = speak(animal.name, 0.85, 1.3);
+      nameAgain.onend = () => {
         overlayTimer = setTimeout(hideOverlay, 800);
       };
-      synth.speak(soundUtter);
+      synth.speak(nameAgain);
     }
 
     function shootStars(card) {

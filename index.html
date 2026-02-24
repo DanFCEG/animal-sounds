@@ -872,13 +872,15 @@
         currentBlank++;
 
         if (currentBlank >= blankIndices.length) {
-          // All blanks filled — celebrate!
+          // All blanks filled — celebrate then play animal sound!
           setTimeout(() => {
-            synth.speak(speak("Well done! " + currentAnimal.name, 0.85, 1.3));
             letterChoices.innerHTML = '';
+            const wellDone = speak("Well done! " + currentAnimal.name, 0.85, 1.3);
+            wellDone.onend = () => {
+              synth.speak(speak(currentAnimal.sound, 0.85, 1.3));
+            };
+            synth.speak(wellDone);
             overlayTimer = setTimeout(() => {
-              overlayLetters.style.display = 'flex';
-              overlayName.style.display    = 'block';
               spellChallenge.style.display = 'none';
               overlayTimer = setTimeout(hideOverlay, 2000);
             }, 2000);

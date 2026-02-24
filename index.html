@@ -804,35 +804,12 @@
 
       showOverlay(animal);
 
-      synth.speak(speak(animal.name, 0.85, 1.3));
-
-      const cleanName = animal.name.replace(/ /g, '');
-      cleanName.split('').forEach((letter, i) => {
-        const utter = speak(letter, 0.4, 1.5);
-        utter.onstart = () => {
-          const oLetters = overlayLetters.querySelectorAll('.letter');
-          if (oLetters[i]) {
-            oLetters[i].classList.remove('pop');
-            void oLetters[i].offsetWidth;
-            oLetters[i].classList.add('pop');
-          }
-          const cLetters = card.querySelectorAll('.letter');
-          if (cLetters[i]) {
-            cLetters[i].classList.remove('pop');
-            void cLetters[i].offsetWidth;
-            cLetters[i].classList.add('pop');
-          }
-        };
-        synth.speak(utter);
-      });
-
-      const nameAgain = speak(animal.name, 0.85, 1.3);
-      nameAgain.onend = () => {
-        // Show Spell It button instead of closing
-        spellBtn.style.display = 'block';
-        overlayTimer = setTimeout(hideOverlay, 6000);
+      // Say the name once, then go straight into the spelling challenge
+      const nameUtter = speak(animal.name, 0.85, 1.3);
+      nameUtter.onend = () => {
+        startSpellChallenge();
       };
-      synth.speak(nameAgain);
+      synth.speak(nameUtter);
     }
 
     function startSpellChallenge() {

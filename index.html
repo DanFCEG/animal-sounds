@@ -295,6 +295,105 @@
       box-shadow: 0 3px 0 #a3005e;
     }
 
+    /* ── SPELL IT BUTTON ── */
+    #spell-btn {
+      background: #e84393;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 14px 32px;
+      font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+      font-size: clamp(1.2rem, 4vw, 1.8rem);
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 6px 0 #a3005e;
+      transition: transform 0.1s, box-shadow 0.1s;
+      display: none;
+    }
+    #spell-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #a3005e; }
+
+    /* ── SPELLING CHALLENGE ── */
+    #spell-challenge {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+    }
+    #spell-word {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+    .spell-tile {
+      width: clamp(40px, 10vw, 64px);
+      height: clamp(40px, 10vw, 64px);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(1.2rem, 4vw, 2rem);
+      font-weight: bold;
+      text-transform: uppercase;
+      font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    }
+    .spell-tile.known {
+      background: #e84393;
+      color: white;
+      box-shadow: 0 4px 0 #a3005e;
+    }
+    .spell-tile.blank {
+      background: white;
+      border: 4px dashed #e84393;
+      color: transparent;
+    }
+    .spell-tile.blank.correct {
+      background: #4caf50;
+      border-color: #4caf50;
+      color: white;
+      animation: correctPop 0.4s ease;
+    }
+    .spell-tile.blank.wrong {
+      animation: wrongShake 0.4s ease;
+    }
+    @keyframes correctPop {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.4); }
+      100% { transform: scale(1); }
+    }
+    @keyframes wrongShake {
+      0%   { transform: translateX(0); background: #ff5252; }
+      25%  { transform: translateX(-8px); }
+      50%  { transform: translateX(8px); }
+      75%  { transform: translateX(-4px); }
+      100% { transform: translateX(0); background: white; }
+    }
+    #letter-choices {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      max-width: 340px;
+    }
+    .choice-btn {
+      width: clamp(44px, 11vw, 68px);
+      height: clamp(44px, 11vw, 68px);
+      border-radius: 14px;
+      border: none;
+      background: #fff9c4;
+      color: #5a3e8a;
+      font-size: clamp(1.2rem, 4vw, 2rem);
+      font-weight: bold;
+      font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 5px 0 #c8a800;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .choice-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #c8a800; }
+    .choice-btn:disabled { opacity: 0.3; cursor: default; }
+
     /* ── STARS ── */
     .stars {
       position: fixed; top: 0; left: 0;
@@ -363,6 +462,11 @@
     <div id="overlay-emoji"></div>
     <div id="overlay-name"></div>
     <div id="overlay-letters"></div>
+    <button id="spell-btn" onclick="startSpellChallenge()">🔤 Spell It!</button>
+    <div id="spell-challenge">
+      <div id="spell-word"></div>
+      <div id="letter-choices"></div>
+    </div>
   </div>
 
   <script>
@@ -639,15 +743,21 @@
       window.scrollTo(0, 0);
     }
 
-    const overlay      = document.getElementById('photo-overlay');
-    const overlayImg   = document.getElementById('overlay-img');
-    const overlayEmoji = document.getElementById('overlay-emoji');
-    const overlayName  = document.getElementById('overlay-name');
+    const overlay        = document.getElementById('photo-overlay');
+    const overlayImg     = document.getElementById('overlay-img');
+    const overlayEmoji   = document.getElementById('overlay-emoji');
+    const overlayName    = document.getElementById('overlay-name');
     const overlayLetters = document.getElementById('overlay-letters');
-    let overlayTimer   = null;
+    const spellBtn       = document.getElementById('spell-btn');
+    const spellChallenge = document.getElementById('spell-challenge');
+    const spellWord      = document.getElementById('spell-word');
+    const letterChoices  = document.getElementById('letter-choices');
+    let overlayTimer     = null;
+    let currentAnimal    = null;
+    let blankIndices     = [];
+    let currentBlank     = 0;
 
     function showOverlay(animal) {
-      // Reset emoji fallback
       overlayImg.style.display = 'block';
       overlayEmoji.style.display = 'none';
       overlayEmoji.textContent = animal.emoji;
@@ -655,27 +765,34 @@
       overlayImg.alt = animal.name;
       overlayName.textContent = animal.name;
 
-      // Build letter tiles
       const cleanName = animal.name.replace(/ /g, '');
       overlayLetters.innerHTML = cleanName.split('').map(
         l => `<span class="letter">${l}</span>`
       ).join('');
 
+      // Hide spell challenge, show spell button
+      spellChallenge.style.display = 'none';
+      spellBtn.style.display = 'none';
       overlay.classList.add('show');
     }
 
     function hideOverlay() {
       overlay.classList.remove('show');
+      spellBtn.style.display = 'none';
+      spellChallenge.style.display = 'none';
     }
 
-    // Tap overlay to dismiss early
-    overlay.addEventListener('click', () => {
-      clearTimeout(overlayTimer);
-      synth.cancel();
-      hideOverlay();
+    // Tap dark background to dismiss — but not the content
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        clearTimeout(overlayTimer);
+        synth.cancel();
+        hideOverlay();
+      }
     });
 
     function playAnimal(animal, card) {
+      currentAnimal = animal;
       card.classList.remove('bounce');
       void card.offsetWidth;
       card.classList.add('bounce');
@@ -687,22 +804,18 @@
 
       showOverlay(animal);
 
-      // Speak name
       synth.speak(speak(animal.name, 0.85, 1.3));
 
-      // Spell out letters with pop animation on overlay tiles
       const cleanName = animal.name.replace(/ /g, '');
       cleanName.split('').forEach((letter, i) => {
         const utter = speak(letter, 0.4, 1.5);
         utter.onstart = () => {
-          // Pop on overlay letters
           const oLetters = overlayLetters.querySelectorAll('.letter');
           if (oLetters[i]) {
             oLetters[i].classList.remove('pop');
             void oLetters[i].offsetWidth;
             oLetters[i].classList.add('pop');
           }
-          // Also pop on card letters
           const cLetters = card.querySelectorAll('.letter');
           if (cLetters[i]) {
             cLetters[i].classList.remove('pop');
@@ -713,12 +826,102 @@
         synth.speak(utter);
       });
 
-      // Say name again then close overlay
       const nameAgain = speak(animal.name, 0.85, 1.3);
       nameAgain.onend = () => {
-        overlayTimer = setTimeout(hideOverlay, 800);
+        // Show Spell It button instead of closing
+        spellBtn.style.display = 'block';
+        overlayTimer = setTimeout(hideOverlay, 6000);
       };
       synth.speak(nameAgain);
+    }
+
+    function startSpellChallenge() {
+      clearTimeout(overlayTimer);
+      synth.cancel();
+
+      const animal    = currentAnimal;
+      const cleanName = animal.name.replace(/ /g, '').toUpperCase();
+      const len       = cleanName.length;
+
+      // How many blanks: 1 for short words, 2 for longer
+      const numBlanks = len <= 4 ? 1 : 2;
+
+      // Pick random blank positions
+      blankIndices = [];
+      while (blankIndices.length < numBlanks) {
+        const idx = Math.floor(Math.random() * len);
+        if (!blankIndices.includes(idx)) blankIndices.push(idx);
+      }
+      blankIndices.sort((a, b) => a - b);
+      currentBlank = 0;
+
+      // Hide name letters, show challenge
+      overlayLetters.style.display = 'none';
+      overlayName.style.display    = 'none';
+      spellBtn.style.display       = 'none';
+      spellChallenge.style.display = 'flex';
+
+      // Build word tiles
+      spellWord.innerHTML = cleanName.split('').map((l, i) => {
+        const isBlank = blankIndices.includes(i);
+        return `<div class="spell-tile ${isBlank ? 'blank' : 'known'}" data-index="${i}" data-letter="${l}">${isBlank ? '' : l}</div>`;
+      }).join('');
+
+      // Build letter choices: the correct letters + random distractors
+      const correctLetters = blankIndices.map(i => cleanName[i]);
+      const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const choices = [...new Set(correctLetters)];
+      while (choices.length < Math.min(6, 26)) {
+        const r = alphabet[Math.floor(Math.random() * 26)];
+        if (!choices.includes(r)) choices.push(r);
+      }
+      // Shuffle
+      choices.sort(() => Math.random() - 0.5);
+
+      letterChoices.innerHTML = choices.map(l =>
+        `<button class="choice-btn" onclick="checkLetter('${l}')">${l}</button>`
+      ).join('');
+
+      // Speak "Which letter is missing?"
+      synth.speak(speak("Which letter is missing?", 0.85, 1.3));
+    }
+
+    function checkLetter(chosen) {
+      const blanks   = spellWord.querySelectorAll('.spell-tile.blank');
+      const target   = blanks[currentBlank];
+      if (!target) return;
+
+      const correct  = target.dataset.letter;
+
+      if (chosen === correct) {
+        target.textContent = correct;
+        target.classList.add('correct');
+        synth.speak(speak("Yes! " + correct, 0.85, 1.4));
+        currentBlank++;
+
+        if (currentBlank >= blankIndices.length) {
+          // All blanks filled — celebrate!
+          setTimeout(() => {
+            synth.speak(speak("Well done! " + currentAnimal.name, 0.85, 1.3));
+            letterChoices.innerHTML = '';
+            overlayTimer = setTimeout(() => {
+              overlayLetters.style.display = 'flex';
+              overlayName.style.display    = 'block';
+              spellChallenge.style.display = 'none';
+              overlayTimer = setTimeout(hideOverlay, 2000);
+            }, 2000);
+          }, 400);
+        } else {
+          // Highlight next blank
+          setTimeout(() => synth.speak(speak("What comes next?", 0.85, 1.3)), 600);
+        }
+      } else {
+        // Wrong — shake the blank tile
+        target.classList.remove('wrong');
+        void target.offsetWidth;
+        target.classList.add('wrong');
+        synth.speak(speak("Try again!", 0.85, 1.2));
+      }
     }
 
     function shootStars(card) {
